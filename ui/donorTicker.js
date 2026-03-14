@@ -1,52 +1,63 @@
-// services/donorAPI.js
+// ui/donorTicker.js
 
-const BASE_URL = 'https://pukul-prabowo.vercel.app';
+let tickerData = [];
+let isLoaded   = false;
 
-let donorCache = null;
-let cacheTime  = 0;
-const CACHE_TTL = 60000;
+export function initDonorTicker() {
+  loadDonorData();
+}
 
-export async function fetchDonors() {
-  if (donorCache && (Date.now() - cacheTime < CACHE_TTL)) return donorCache;
-
+async function loadDonorData() {
   try {
-    const res = await fetch(`${BASE_URL}/api/donors`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-
-    const maxAmount = data.donors.length
-      ? Math.max(...data.donors.map(d => d.amount))
-      : 0;
-
-    donorCache = data.donors.map(d => ({
-      name:      d.name,
-      amount:    d.amount,
-      highlight: d.amount === maxAmount,
-    }));
-    cacheTime = Date.now();
-    return donorCache;
+    const { fetchDonors } = await import('../services/donorAPI.js');
+    tickerData = await fetchDonors();
+    renderTicker(tickerData);
+    isLoaded = true;
   } catch (e) {
-    console.warn('Gagal fetch donors:', e);
-    return []; // kosong kalau gagal
+    console.warn('Donor API failed:', e);
+    renderTicker([]);
   }
 }
 
-export async function submitDonation(donorData) {
-  try {
-    const res = await fetch(`${BASE_URL}/api/donors`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(donorData),
+function renderTicker(data) {
+  const tickerEl = document.getElementById('donor-ticker');
+  if (!tickerEl) return;
+
+  tickerEl.innerHTML = '';
+  if (!data.length) return;
+
+  const rowSize = Math.ceil(data.length / 3);
+  const rows = [
+    data.slice(0, rowSize),
+    data.slice(rowSize, rowSize * 2),
+    data.slice(rowSize * 2),
+  ];
+
+  rows.forEach((rowData, rowIndex) => {
+    if (!rowData.length) return;
+    const row = document.createElement('div');
+    row.className = 'ticker-row';
+    row.classList.add(rowIndex % 2 === 0 ? 'ticker-left' : 'ticker-right');
+    const chips = [...rowData, ...rowData, ...rowData, ...rowData];
+    chips.forEach(donor => {
+      const chip = document.createElement('div');
+      chip.className = donor.highlight ? 'donor-chip highlight' : 'donor-chip';
+      chip.innerHTML = `${escapeHtml(donor.name)} <strong>${donor.amount.toLocaleString('id-ID')}</strong>`;
+      row.appendChild(chip);
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    invalidateDonorCache();
-    return { success: true };
-  } catch (e) {
-    return { success: false };
-  }
+    tickerEl.appendChild(row);
+  });
 }
 
-export function invalidateDonorCache() {
-  donorCache = null;
-  cacheTime  = 0;
+export function refreshDonorTicker() {
+  if (!isLoaded) return;
+  loadDonorData();
+}
+
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
