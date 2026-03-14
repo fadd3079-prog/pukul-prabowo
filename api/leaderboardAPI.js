@@ -2,7 +2,7 @@
 // Mengelola pengambilan data leaderboard pemain dan provinsi dari server
 
 // ===== CONFIG =====
-const BASE_URL = 'https://your-api.com'; // Ganti dengan URL API kamu
+const BASE_URL = 'https://pukul-prabowo.vercel.app'; // Ganti dengan URL API kamu
 
 // ===== CACHE =====
 // Cache ringan untuk kurangi request berulang

@@ -2,7 +2,7 @@
 // Mengelola pengambilan data donor dari server
 
 // ===== CONFIG =====
-const BASE_URL = 'https://your-api.com'; // Ganti dengan URL API kamu
+const BASE_URL = 'https://pukul-prabowo.vercel.app'; // Ganti dengan URL API kamu
 
 // ===== CACHE =====
 let donorCache = null;

@@ -1,0 +1,43 @@
+// api/leaderboard/players.js
+// GET — ambil ranking pemain dengan pagination
+
+import { supabase } from '../../lib/supabase.js';
+
+export default async function handler(req, res) {
+
+  // ===== CORS =====
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+
+  // ===== PARAMS =====
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const size = Math.min(20, Math.max(1, parseInt(req.query.size) || 5));
+  const from = (page - 1) * size;
+  const to   = from + size - 1;
+
+  // ===== QUERY =====
+  try {
+    const { data, error } = await supabase
+      .from('player_ranking')
+      .select('rank, name, province, score')
+      .range(from, to)
+      .order('score', { ascending: false });
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      success: true,
+      page,
+      size,
+      players: data || [],
+    });
+
+  } catch (e) {
+    console.error('Error leaderboard pemain:', e);
+    return res.status(500).json({ error: 'Gagal mengambil leaderboard pemain' });
+  }
+}

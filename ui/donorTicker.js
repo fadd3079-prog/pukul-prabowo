@@ -1,26 +1,29 @@
 // ui/donorTicker.js
-// Mengelola tampilan ticker nama donor yang bergerak
 
-// ===== ELEMENT REFS =====
 const tickerEl = document.getElementById('donor-ticker');
 
-// ===== STATE =====
-let tickerData   = [];   // Data donor dari API
-let isLoaded     = false;
+let tickerData = [];
+let isLoaded   = false;
 
-// ===== INIT =====
-/**
- * Inisialisasi donor ticker
- * Dipanggil dari script.js
- */
 export function initDonorTicker() {
   loadDonorData();
 }
 
-// ===== LOAD DATA =====
-/**
- * Ambil data donor dari API lalu render
- */
+function renderDonorButton() {
+  const donorSection = document.getElementById('donor-section');
+  if (!donorSection || document.getElementById('btn-donate')) return;
+
+  const btn = document.createElement('a');
+  btn.id          = 'btn-donate';
+  btn.href        = 'https://tako.id/fadhol_pemula';
+  btn.target      = '_blank';
+  btn.rel         = 'noopener noreferrer';
+  btn.textContent = 'DUKUNG DEVELOPER';
+
+  const wrapper = document.getElementById('donor-ticker-wrapper');
+  donorSection.insertBefore(btn, wrapper);
+}
+
 async function loadDonorData() {
   try {
     const { fetchDonors } = await import('../api/donorAPI.js');
@@ -28,70 +31,71 @@ async function loadDonorData() {
     renderTicker(tickerData);
     isLoaded = true;
   } catch (e) {
-    console.warn('Data donor gagal dimuat:', e);
-    // Tampilkan placeholder jika API gagal
     renderTicker(getPlaceholderDonors());
   }
 }
 
-// ===== RENDER =====
 /**
- * Render chip donor ke dalam ticker container
- * @param {Array<{ name: string, amount: number, highlight?: boolean }>} data
+ * Render donor chips dalam beberapa baris
+ * Tiap baris scroll marquee berlawanan arah
  */
 function renderTicker(data) {
   if (!tickerEl) return;
 
   tickerEl.innerHTML = '';
 
-  data.forEach(donor => {
-    const chip = document.createElement('div');
-    chip.className = donor.highlight
-      ? 'donor-chip highlight'
-      : 'donor-chip';
+  // Bagi data jadi 3 baris
+  const rowSize  = Math.ceil(data.length / 3);
+  const rows     = [
+    data.slice(0, rowSize),
+    data.slice(rowSize, rowSize * 2),
+    data.slice(rowSize * 2),
+  ];
 
-    chip.textContent = `${escapeHtml(donor.name)}  ${donor.amount.toLocaleString('id-ID')}`;
-    tickerEl.appendChild(chip);
+  rows.forEach((rowData, rowIndex) => {
+    if (!rowData.length) return;
+
+    const row = document.createElement('div');
+    row.className = 'ticker-row';
+
+    // Arah bergantian: baris 0 & 2 ke kiri, baris 1 ke kanan
+    row.classList.add(rowIndex % 2 === 0 ? 'ticker-left' : 'ticker-right');
+
+    // Duplikat chip agar marquee seamless
+    const chips = [...rowData, ...rowData, ...rowData, ...rowData, ...rowData, ...rowData, ...rowData, ...rowData, ...rowData, ...rowData];
+    chips.forEach(donor => {
+      const chip = document.createElement('div');
+      chip.className = donor.highlight ? 'donor-chip highlight' : 'donor-chip';
+      chip.innerHTML = `${escapeHtml(donor.name)} <strong>${donor.amount.toLocaleString('id-ID')}</strong>`;
+      row.appendChild(chip);
+    });
+
+    tickerEl.appendChild(row);
   });
 }
 
-// ===== REFRESH =====
-/**
- * Refresh data donor (dipanggil berkala jika diperlukan)
- */
 export function refreshDonorTicker() {
   if (!isLoaded) return;
   loadDonorData();
 }
 
-// ===== PLACEHOLDER =====
-/**
- * Data dummy saat API belum tersedia
- * @returns {Array}
- */
 function getPlaceholderDonors() {
   return [
-    { name: 'Sandy',      amount: 10000 },
-    { name: 'Sandikagali', amount: 10000 },
-    { name: 'Sandy',      amount: 10000 },
-    { name: 'Sandikagali', amount: 10000, highlight: true },
-    { name: 'Sandy',      amount: 10000 },
-    { name: 'Sandikagali', amount: 10000 },
-    { name: 'Sandy',      amount: 10000 },
-    { name: 'Sandikagali', amount: 10000 },
-    { name: 'Sandy',      amount: 10000 },
-    { name: 'Sandikagali', amount: 10000, highlight: true },
-    { name: 'Sandy',      amount: 10000 },
-    { name: 'Sandikagali', amount: 10000 },
+    { name: 'Sandy',       amount: 10000, highlight: false },
+    { name: 'Sandikagali', amount: 10000, highlight: false },
+    { name: 'Sandy',       amount: 10000, highlight: false },
+    { name: 'Sandikagali', amount: 50000, highlight: true  },
+    { name: 'Sandy',       amount: 10000, highlight: false },
+    { name: 'Sandikagali', amount: 10000, highlight: false },
+    { name: 'Sandy',       amount: 10000, highlight: false },
+    { name: 'Sandikagali', amount: 10000, highlight: false },
+    { name: 'Sandy',       amount: 10000, highlight: false },
+    { name: 'Sandikagali', amount: 10000, highlight: false },
+    { name: 'Sandy',       amount: 10000, highlight: false },
+    { name: 'Sandikagali', amount: 10000, highlight: false },
   ];
 }
 
-// ===== UTILS =====
-/**
- * Escape HTML untuk cegah XSS
- * @param {string} str
- * @returns {string}
- */
 function escapeHtml(str) {
   return str
     .replace(/&/g, '&amp;')
