@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 'theme-color' is not supported by Firefox, Firefox for Android, Opera -->
+    <meta name="theme-color" content="#2d0a4e" />
+    <title>Pukul Prabowo</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="assets/logo.png" type="image/png" />
+</head>
+
+<body>
+
+    <!-- ===== LOGIN SCREEN ===== -->
+    <div id="screen-login" class="screen active">
+        <div class="login-card">
+            <h1 class="game-title">PUKUL<br>PRABOWO</h1>
+            <input id="input-name" type="text" placeholder="Nama" maxlength="20" autocomplete="off" />
+            <div class="select-wrapper">
+                <label for="input-province" class="visually-hidden">Pilih Provinsi</label>
+                <select id="input-province" aria-label="Pilih Provinsi">
+                    <option value="" disabled selected>Provinsi</option>
+                    <!-- diisi oleh provinces.js -->
+                </select>
+            </div>
+            <button id="btn-play">Main</button>
+        </div>
+    </div>
+
+    <!-- ===== GAME SCREEN ===== -->
+    <div id="screen-game" class="screen">
+
+        <!-- Header -->
+        <div id="game-header">
+            <div class="header-left">
+                <span class="label-skor">SKOR</span>
+                <span id="display-score">0</span>
+            </div>
+            <div class="header-center">
+                <span id="display-title">PUKUL PRABOWO</span>
+            </div>
+            <div class="header-right">
+                <button id="btn-profile" aria-label="Profil">
+                    <!-- icon avatar SVG inline -->
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="4" />
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Arena (area klik) -->
+        <div id="game-arena">
+            <!-- Objek utama yang dipukul -->
+            <div id="hit-object">
+                <img id="character-img" src="assets/objek.png" alt="Prabowo" draggable="false" />
+            </div>
+
+            <!-- Container popup (float di atas arena) -->
+            <div id="popup-container" aria-hidden="true"></div>
+        </div>
+
+        <!-- Footer hint -->
+        <p id="game-hint">Klik prabowo untuk memukul</p>
+
+    </div>
+
+    <!-- ===== LEADERBOARD SCREEN ===== -->
+    <div id="screen-leaderboard" class="screen">
+
+        <div id="leaderboard-card">
+
+            <!-- Ranking Pemain -->
+            <section class="lb-section">
+                <h2>RANKING PEMAIN</h2>
+                <ul id="lb-player-list"></ul>
+                <button class="btn-show-more" id="btn-more-player">show more ▾</button>
+            </section>
+
+            <!-- Ranking Provinsi -->
+            <section class="lb-section">
+                <h2>RANKING PROVINSI</h2>
+                <ul id="lb-province-list"></ul>
+                <button class="btn-show-more" id="btn-more-province">show more ▾</button>
+            </section>
+
+            <!-- Donor Ticker -->
+            <section id="donor-section">
+                <h3>DUKUNG DEVELOPER</h3>
+                <p class="donor-thanks">TERIMAKASIH<br><span>ATAS DUKUNGANNYA</span></p>
+                <div id="donor-ticker-wrapper">
+                    <div id="donor-ticker"></div>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+
+<!-- Ganti seluruh isi profile-card di index.html -->
+<!-- Ganti div screen-profile di index.html -->
+<div id="screen-profile" class="screen" style="position:fixed;top:0;left:0;width:100vw;height:100vh;display:none;align-items:center;justify-content:center;background:#2d0a4e;z-index:999;">
+  <div class="profile-card">
+    <h1 class="game-title">PUKUL<br>PRABOWO</h1>
+    <div class="profile-row">
+      <span class="profile-label">Nama</span>
+      <span id="profile-name"></span>
+    </div>
+    <div class="profile-row">
+      <span class="profile-label">Provinsi</span>
+      <span id="profile-province"></span>
+    </div>
+    <div class="profile-row">
+      <span class="profile-label">Skor</span>
+      <span id="profile-score"></span>
+    </div>
+    <div class="profile-row">
+      <span class="profile-label">Rank Player</span>
+      <span id="profile-rank"></span>
+    </div>
+    <button id="btn-close-profile">Tutup</button>
+  </div>
+</div>
+
+    <!-- ===== ENTRY POINT ===== -->
+    <script type="module" src="script.js"></script>
+
+</body>
+
+</html>
