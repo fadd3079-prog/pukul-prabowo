@@ -1,19 +1,11 @@
 // api/donors/index.js
-// GET — ambil daftar donor
-// POST — tambah donasi baru
+const { supabase } = require('../../lib/supabase');
 
-import { supabase } from '../../lib/supabase.js';
-
-export default async function handler(req, res) {
-
-  // ===== CORS =====
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // ===== GET =====
   if (req.method === 'GET') {
     try {
       const { data, error } = await supabase
@@ -24,65 +16,34 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      // Tandai donor dengan amount tertinggi sebagai highlight
-      const maxAmount = data.length
-        ? Math.max(...data.map(d => d.amount))
-        : 0;
-
+      const maxAmount = data.length ? Math.max(...data.map(d => d.amount)) : 0;
       const donors = data.map(d => ({
         name:      d.name,
         amount:    d.amount,
-        message:   d.message || '',
         highlight: d.amount === maxAmount,
       }));
 
-      return res.status(200).json({
-        success: true,
-        donors,
-      });
-
+      return res.status(200).json({ success: true, donors });
     } catch (e) {
-      console.error('Error ambil donor:', e);
-      return res.status(500).json({ error: 'Gagal mengambil data donor' });
+      return res.status(500).json({ error: 'Gagal mengambil donor' });
     }
   }
 
-  // ===== POST =====
   if (req.method === 'POST') {
     const { name, amount, message } = req.body;
-
-    // Validasi
-    if (!name || amount === undefined) {
-      return res.status(400).json({ error: 'name dan amount wajib diisi' });
-    }
-
-    if (typeof amount !== 'number' || amount <= 0) {
-      return res.status(400).json({ error: 'amount harus angka positif' });
-    }
-
-    if (name.length > 50) {
-      return res.status(400).json({ error: 'nama maksimal 50 karakter' });
-    }
+    if (!name || !amount) return res.status(400).json({ error: 'name dan amount wajib' });
 
     try {
       const { error } = await supabase
         .from('donors')
-        .insert({
-          name:    name.trim(),
-          amount,
-          message: message ? message.trim() : null,
-        });
+        .insert({ name: name.trim(), amount, message: message || null });
 
       if (error) throw error;
-
       return res.status(200).json({ success: true });
-
     } catch (e) {
-      console.error('Error tambah donor:', e);
-      return res.status(500).json({ error: 'Gagal menyimpan donasi' });
+      return res.status(500).json({ error: 'Gagal menyimpan donor' });
     }
   }
 
-  // Method tidak diizinkan
   return res.status(405).json({ error: 'Method not allowed' });
-}
+};
