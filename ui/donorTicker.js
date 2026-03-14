@@ -31,6 +31,9 @@ async function loadDonorData() {
     renderTicker(tickerData);
     isLoaded = true;
   } catch (e) {
+    console.error('Donor API failed:', e);
+    const { showError } = await import('./errorToast.js');
+    showError('Gagal memuat daftar donor. Menggunakan data sementara.');
     renderTicker(getPlaceholderDonors());
   }
 }

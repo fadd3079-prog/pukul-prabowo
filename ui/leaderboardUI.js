@@ -53,7 +53,9 @@ async function loadPlayerRanking(page) {
     const data = await fetchPlayerLeaderboard(page, PAGE_SIZE);
     renderPlayerList(data, page > 1);
   } catch (e) {
-    console.warn('Leaderboard pemain gagal:', e);
+    console.error('Player leaderboard failed:', e);
+    const { showError } = await import('./errorToast.js');
+    showError('Gagal memuat leaderboard pemain. Menggunakan data sementara.');
   }
 }
 
@@ -63,7 +65,9 @@ async function loadProvinceRanking(page) {
     const data = await fetchProvinceLeaderboard(page, PAGE_SIZE);
     renderProvinceList(data, page > 1);
   } catch (e) {
-    console.warn('Leaderboard provinsi gagal:', e);
+    console.error('Province leaderboard failed:', e);
+    const { showError } = await import('./errorToast.js');
+    showError('Gagal memuat leaderboard provinsi. Menggunakan data sementara.');
   }
 }
 
