@@ -12,7 +12,7 @@ import { initProfileUI, updateProfileDisplay } from './ui/profileUI.js';
 import { initLeaderboardUI } from './ui/leaderboardUI.js';
 import { initDonorTicker } from './ui/donorTicker.js';
 import { populateProvinceSelect } from './data/provinces.js';
-import { submitScore } from './api/playerAPI.js';
+import { submitScore } from './services/playerAPI.js';
 
 // ===== REFS =====
 const screenGame     = document.getElementById('screen-game');

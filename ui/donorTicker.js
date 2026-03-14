@@ -26,7 +26,7 @@ function renderDonorButton() {
 
 async function loadDonorData() {
   try {
-    const { fetchDonors } = await import('../api/donorAPI.js');
+    const { fetchDonors } = await import('../services/donorAPI.js');
     tickerData = await fetchDonors();
     renderTicker(tickerData);
     isLoaded = true;
