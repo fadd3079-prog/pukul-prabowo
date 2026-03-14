@@ -1,1 +1,29 @@
-// api/donorAPI.js&#10;// Mengelola pengambilan data donor dari server&#10;&#10;// ===== RETRY UTILITY =====&#10;async function retryFetch(url, options = {}, retries = 3) {&#10;  for (let i = 0; i < retries; i++) {&#10;    try {&#10;      const res = await fetch(url, options);&#10;      if (res.ok || i === retries - 1) return res; // Return last attempt&#10;      await new Promise(r => setTimeout(r, 1000 * (i + 1))); // Backoff&#10;    } catch (e) {&#10;      if (i === retries - 1) throw e;&#10;      await new Promise(r => setTimeout(r, 1000 * (i + 1));&#10;    }&#10;  }&#10;}&#10;&#10;// ===== CONFIG =====&#10;const getBaseUrl = () => window.location.host.includes('localhost') ? '' : 'https://pukul-prabowo.vercel.app';&#10;&#10;// ===== CACHE =====&#10;let donorCache = null;&#10;let cacheTime  = 0;&#10;const CACHE_TTL = 60000; // 60 detik&#10;&#10;// ===== FETCH DONORS =====&#10;/**&#10; * Ambil daftar donor dari server&#10; * @returns {Promise<Array<{ name: string, amount: number, highlight?: boolean }>>}&#10; */&#10;export async function fetchDonors() {&#10;  // Gunakan cache jika masih valid&#10;  if (donorCache && (Date.now() - cacheTime < CACHE_TTL)) {&#10;    return donorCache;&#10;  }&#10;&#10;  try {&#10;    const res = await retryFetch(`${getBaseUrl()}/api/donors`);&#10;&#10;    if (!res.ok) throw new Error(`HTTP ${res.status}`);&#10;&#10;    const data = await res.json();&#10;    const donors = normalizeDonors(data.donors || []);&#10;&#10;    // Simpan ke cache&#10;    donorCache = donors;&#10;    cacheTime  = Date.now();&#10;&#10;    return donors;&#10;&#10;  } catch (e) {&#10;    console.warn('Gagal mengambil data donor:', e);&#10;    return getPlaceholderDonors();&#10;  }&#10;}&#10;&#10;// ===== SUBMIT DONOR =====&#10;/**&#10; * Kirim data donasi baru ke server&#10; * @param {{ name: string, amount: number, message?: string }} donorData&#10; * @returns {Promise<{ success: boolean }>}&#10; */&#10;export async function submitDonation(donorData) {&#10;  try {&#10;    const res = await retryFetch(`${getBaseUrl()}/api/donors`, {&#10;      method: 'POST',&#10;      headers: {&#10;        'Content-Type': 'application/json',&#10;      },&#10;      body: JSON.stringify({&#10;        name:    donorData.name,&#10;        amount:  donorData.amount,&#10;        message: donorData.message || '',&#10;      }),&#10;    });&#10;&#10;    if (!res.ok) throw new Error(`HTTP ${res.status}`);&#10;&#10;    // Invalidate cache agar data fresh&#10;    invalidateDonorCache();&#10;&#10;    return { success: true };&#10;&#10;  } catch (e) {&#10;    console.warn('Gagal mengirim donasi:', e);&#10;    return { success: false };&#10;  }&#10;}&#10;&#10;// ===== NORMALIZE =====&#10;/**&#10; * Normalisasi data donor dari server&#10; * Tandai donor dengan amount tertinggi sebagai highlight&#10; * @param {Array} raw&#10; * @returns {Array<{ name: string, amount: number, highlight: boolean }>}&#10; */&#10;function normalizeDonors(raw) {&#10;  if (!raw.length) return [];&#10;&#10;  // Cari amount tertinggi&#10;  const maxAmount = Math.max(...raw.map(d => d.amount || 0));&#10;&#10;  return raw.map(d => ({&#10;    name:      d.name      || 'Anonim',&#10;    amount:    d.amount    || 0,&#10;    highlight: d.amount === maxAmount,&#10;  }));&#10;}&#10;&#10;// ===== INVALIDATE CACHE =====&#10;/**&#10; * Hapus cache donor agar data fresh&#10; */&#10;export function invalidateDonorCache() {&#10;  donorCache = null;&#10;  cacheTime  = 0;&#10;}&#10;&#10;// ===== PLACEHOLDER =====&#10;/**&#10; * Data dummy donor saat API belum tersedia&#10; * @returns {Array}&#10; */&#10;function getPlaceholderDonors() {&#10;  return [&#10;    { name: 'Sandy',       amount: 10000, highlight: false },&#10;    { name: 'Sandikagali', amount: 10000, highlight: false },&#10;    { name: 'Sandy',       amount: 10000, highlight: false },&#10;    { name: 'Sandikagali', amount: 50000, highlight: true  },&#10;    { name: 'Sandy',       amount: 10000, highlight: false },&#10;    { name: 'Sandikagali', amount: 10000, highlight: false },&#10;    { name: 'Sandy',       amount: 10000, highlight: false },&#10;    { name: 'Sandikagali', amount: 10000, highlight: false },&#10;    { name: 'Sandy',       amount: 10000, highlight: false },&#10;    { name: 'Sandikagali', amount: 10000, highlight: false },&#10;    { name: 'Sandy',       amount: 10000, highlight: false },&#10;    { name: 'Sandikagali', amount: 10000, highlight: false },&#10;  ];&#10;}&#10;
+// services/donorAPI.js
+
+const BASE_URL = 'https://pukul-prabowo.vercel.app';
+
+let donorCache = null;
+let cacheTime  = 0;
+const CACHE_TTL = 60000;
+
+export async function fetchDonors() {
+  if (donorCache && (Date.now() - cacheTime < CACHE_TTL)) return donorCache;
+  try {
+    const res = await fetch(`${BASE_URL}/api/donors`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const maxAmount = data.donors.length ? Math.max(...data.donors.map(d => d.amount)) : 0;
+    donorCache = data.donors.map(d => ({
+      name: d.name, amount: d.amount, highlight: d.amount === maxAmount,
+    }));
+    cacheTime = Date.now();
+    return donorCache;
+  } catch (e) {
+    return [];
+  }
+}
+
+export function invalidateDonorCache() {
+  donorCache = null;
+  cacheTime  = 0;
+}
