@@ -1,27 +1,4 @@
 {
-  "version": 2,
-  "routes": [
-    {
-      "src": "/api/players/score",
-      "dest": "/api/players/score.js"
-    },
-    {
-      "src": "/api/players/rank",
-      "dest": "/api/players/rank.js"
-    },
-    {
-      "src": "/api/leaderboard/players",
-      "dest": "/api/leaderboard/players.js"
-    },
-    {
-      "src": "/api/leaderboard/provinces",
-      "dest": "/api/leaderboard/provinces.js"
-    },
-    {
-      "src": "/api/donors",
-      "dest": "/api/donors/index.js"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
