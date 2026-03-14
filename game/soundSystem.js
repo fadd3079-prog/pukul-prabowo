@@ -1,10 +1,10 @@
 // game/soundSystem.js
 
 // ===== PRELOAD =====
-const hitSound   = new Audio('assets/sfx-pukul.ogg');
+const hitSound   = audio.src = "/assets/sfx-pukul.ogg"
 hitSound.preload = 'auto';
 
-const comboSound = new Audio('assets/sfx-pukul.ogg');
+const comboSound = audio.src = "/assets/sfx-pukul.ogg"
 comboSound.preload      = 'auto';
 comboSound.playbackRate = 1.5;
 comboSound.volume       = 1.0;
@@ -17,7 +17,7 @@ export function initSoundSystem() {
 }
 
 function unlockAudio() {
-  const silent = new Audio('assets/sfx-pukul.ogg');
+  const silent = audio.src = "/assets/sfx-pukul.ogg"
   silent.volume = 0;
   silent.play().catch(() => {});
 }

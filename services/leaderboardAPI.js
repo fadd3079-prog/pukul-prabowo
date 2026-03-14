@@ -4,7 +4,7 @@ const BASE_URL = 'https://pukul-prabowo.vercel.app';
 
 export async function fetchPlayerLeaderboard(page = 1, size = 5) {
   try {
-    const res  = await fetch(`${BASE_URL}/api/leaderboard/players?page=${page}&size=${size}`);
+    const res  = await fetch(`${BASE_URL}/api/leaderboards/players?page=${page}&size=${size}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     return data.players || [];
@@ -15,7 +15,7 @@ export async function fetchPlayerLeaderboard(page = 1, size = 5) {
 
 export async function fetchProvinceLeaderboard(page = 1, size = 5) {
   try {
-    const res  = await fetch(`${BASE_URL}/api/leaderboard/provinces?page=${page}&size=${size}`);
+    const res  = await fetch(`${BASE_URL}/api/leaderboards/provinces?page=${page}&size=${size}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     return data.provinces || [];
