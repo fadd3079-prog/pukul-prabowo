@@ -30,7 +30,6 @@ import { initLeaderboardUI } from './ui/leaderboardUI.js';
 import { initDonorTicker } from './ui/donorTicker.js';
 
 import { populateProvinceSelect } from './data/provinces.js';
-
 import { submitScore } from './services/playerAPI.js';
 
 
@@ -43,7 +42,7 @@ const displayScore   = document.getElementById('display-score');
 const btnProfile     = document.getElementById('btn-profile');
 
 
-// ===== SCREEN SWITCHER =====
+// ===== SCREEN SYSTEM =====
 function showScreen(id) {
 
   document.querySelectorAll('.screen').forEach(s => {
@@ -88,7 +87,6 @@ function savePlayer(name, province){
 
 }
 
-
 function loadPlayer(){
 
   const saved = localStorage.getItem("player");
@@ -97,9 +95,27 @@ function loadPlayer(){
 
   try{
     return JSON.parse(saved);
-  }catch(e){
+  }catch{
     return null;
   }
+
+}
+
+
+// ===== SCORE STORAGE =====
+function saveScore(score){
+
+  localStorage.setItem("playerScore", score);
+
+}
+
+function loadScore(){
+
+  const saved = localStorage.getItem("playerScore");
+
+  if(!saved) return 0;
+
+  return parseInt(saved);
 
 }
 
@@ -126,19 +142,25 @@ initLoginUI({
 // ===== START GAME =====
 function startGame(){
 
-  gameState.isPlaying     = true;
-  gameState.startTime     = Date.now();
-  gameState.hit           = 0;
-  gameState.combo         = 0;
-  gameState.maxCombo      = 0;
+  gameState.isPlaying = true;
+
+  gameState.startTime = Date.now();
+
+  gameState.hit = loadScore();   // LOAD SCORE DARI STORAGE
+
+  gameState.combo = 0;
+
+  gameState.maxCombo = 0;
+
   gameState.lastClickTime = 0;
 
-  displayScore.textContent = "0";
+  displayScore.textContent = gameState.hit;
 
-  const gameBody = document.getElementById("game-body");
-  if(gameBody) gameBody.scrollTop = 0;
+  const gameBody = document.getElementById('game-body');
 
-  showScreen("screen-game");
+  if (gameBody) gameBody.scrollTop = 0;
+
+  showScreen('screen-game');
 
   startEngine();
 
@@ -161,21 +183,21 @@ if(savedPlayer){
 // ===== PROFILE =====
 initProfileUI({
   onClose(){
-    showScreen("screen-game");
+    showScreen('screen-game');
   }
 });
 
-btnProfile.addEventListener("click", () => {
+btnProfile.addEventListener('click', () => {
 
   updateProfileDisplay();
 
-  showScreen("screen-profile");
+  showScreen('screen-profile');
 
 });
 
-document.getElementById("btn-close-profile").addEventListener("click", () => {
+document.getElementById('btn-close-profile').addEventListener('click', () => {
 
-  showScreen("screen-game");
+  showScreen('screen-game');
 
 });
 
@@ -195,13 +217,13 @@ initClickSystem(hitObject, {
 
     displayScore.textContent = hit;
 
+    saveScore(hit); // SIMPAN SCORE SETIAP HIT
+
     playHitAnimation(isCritical);
 
     spawnHitPopup(hitValue);
 
-    if(isCritical){
-      spawnCriticalPopup();
-    }
+    if (isCritical) spawnCriticalPopup();
 
     playHit(isCritical);
 
@@ -240,20 +262,23 @@ initLeaderboardUI();
 initDonorTicker();
 
 
-// ===== AUTO SUBMIT SCORE =====
+// ===== AUTO SUBMIT SCORE KE SERVER =====
 setInterval(() => {
 
   if(gameState.isPlaying){
+
     submitScore();
+
   }
 
 }, 10000);
 
 
-// ===== SUBMIT SAAT TAB DITUTUP =====
-window.addEventListener("visibilitychange", async () => {
 
-  if(document.visibilityState === "hidden" && gameState.isPlaying){
+// ===== SUBMIT SAAT TAB DITUTUP =====
+window.addEventListener('visibilitychange', async () => {
+
+  if (document.visibilityState === 'hidden' && gameState.isPlaying){
 
     await submitScore();
 
@@ -263,12 +288,14 @@ window.addEventListener("visibilitychange", async () => {
 
 
 // ===== RESIZE CLEANUP =====
-window.addEventListener("resize", () => {
+window.addEventListener('resize', () => {
 
-  const container = document.getElementById("popup-container");
+  const container = document.getElementById('popup-container');
 
   if(container){
-    container.innerHTML = "";
+
+    container.innerHTML = '';
+
   }
 
 });
