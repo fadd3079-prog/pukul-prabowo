@@ -1,85 +1,45 @@
-const { supabase } = require('../../lib/supabase');
+const { supabase } = require('../../lib/supabase')
 
 module.exports = async function handler(req, res) {
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Origin','*')
+  res.setHeader('Access-Control-Allow-Methods','POST,OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers','Content-Type')
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if(req.method === 'OPTIONS') return res.status(200).end()
+  if(req.method !== 'POST') return res.status(405).json({error:'Method not allowed'})
 
-  const { name, province, score } = req.body;
+  try{
 
-  if (!name || !province || score === undefined) {
-    return res.status(400).json({ error: 'name, province, score wajib diisi' });
-  }
+    const { id_player, name, province_id, score } = req.body
 
-  const playerName = name.trim();
-  const playerProvince = province.trim();
-  const playerScore = Number(score);
-
-  try {
-
-    // 1️⃣ cek apakah player sudah ada
-    const { data: existingPlayer, error: fetchError } = await supabase
-      .from('players')
-      .select('*')
-      .eq('name', playerName)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      throw fetchError;
+    if(!id_player || !name || !province_id || score === undefined){
+      return res.status(400).json({error:'data tidak lengkap'})
     }
 
-    // 2️⃣ jika belum ada → insert
-    if (!existingPlayer) {
-
-      const { error: insertError } = await supabase
-        .from('players')
-        .insert({
-          name: playerName,
-          province: playerProvince,
-          score: playerScore
-        });
-
-      if (insertError) throw insertError;
-
-    } else {
-
-      // 3️⃣ jika ada → update hanya jika skor lebih tinggi
-      if (playerScore > existingPlayer.score) {
-
-        const { error: updateError } = await supabase
-          .from('players')
-          .update({
-            score: playerScore,
-            province: playerProvince
-          })
-          .eq('name', playerName);
-
-        if (updateError) throw updateError;
-
-      }
-    }
-
-    // 4️⃣ hitung rank
-    const { count } = await supabase
+    const { data, error } = await supabase
       .from('players')
-      .select('*', { count: 'exact', head: true })
-      .gt('score', playerScore);
+      .upsert(
+        {
+          id_player,
+          name,
+          province_id,
+          score
+        },
+        {
+          onConflict: 'id_player'
+        }
+      )
+      .select()
+      .single()
 
-    return res.status(200).json({
-      success: true,
-      rank: (count || 0) + 1
-    });
+    if(error) throw error
 
-  } catch (e) {
+    return res.status(200).json(data)
 
-    console.error(e);
+  }catch(err){
 
-    return res.status(500).json({
-      error: 'Gagal menyimpan skor'
-    });
+    return res.status(500).json({error:err.message})
 
   }
-};
+}

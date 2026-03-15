@@ -1,47 +1,41 @@
-// api/players/rank.js
-const { supabase } = require('../../lib/supabase');
+const { supabase } = require('../../lib/supabase')
 
-module.exports = async function handler(req, res) {
+module.exports = async function handler(req, res){
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Origin','*')
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-
-  const { name } = req.query;
-
-  if (!name) {
-    return res.status(400).json({ error: 'name wajib diisi' });
+  if(req.method !== 'GET'){
+    return res.status(405).json({error:'Method not allowed'})
   }
 
-  try {
+  try{
 
-    const { data, error } = await supabase
-      .from('player_ranking')
-      .select('rank, score, province')
-      .eq('name', name.trim())
-      .single();
+    const { id_player } = req.query
 
-    if (error || !data) {
-      return res.status(200).json({
-        rank: 0,
-        score: 0,
-        province: null
-      });
-    }
+    const { data:player, error } = await supabase
+      .from('players')
+      .select('score')
+      .eq('id_player', id_player)
+      .single()
+
+    if(error) throw error
+
+    const { count } = await supabase
+      .from('players')
+      .select('*',{count:'exact', head:true})
+      .gt('score', player.score)
+
+    const rank = (count || 0) + 1
 
     return res.status(200).json({
-      rank: data.rank,
-      score: data.score,
-      province: data.province
-    });
+      rank,
+      score:player.score
+    })
 
-  } catch (e) {
+  }catch(err){
 
-    return res.status(500).json({
-      error: 'Gagal mengambil rank'
-    });
+    return res.status(500).json({error:err.message})
 
   }
-};
+
+}
