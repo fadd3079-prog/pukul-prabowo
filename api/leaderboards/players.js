@@ -1,29 +1,27 @@
 const { supabase } = require('../../lib/supabase')
+const { validateMethod, jsonOk, jsonError, getPage } = require('../../lib/apiHelper')
 
-module.exports = async function handler(req,res){
+module.exports = async function handler(req, res) {
+  if (!validateMethod(req, res, 'GET')) return
 
-  res.setHeader('Access-Control-Allow-Origin','*')
+  try {
+    const { page, size } = getPage(req)
+    const from = (page - 1) * size
+    const to = from + size - 1
 
-  if(req.method !== 'GET'){
-    return res.status(405).json({error:'Method not allowed'})
+    const { data, error, count } = await supabase
+      .from('player_leaderboard')
+      .select('id, name, province_name, score, max_combo, rank', { count: 'exact' })
+      .range(from, to)
+
+    if (error) {
+      console.error('player leaderboard error:', error)
+      return jsonError(res, 500, 'DB_ERROR', 'Failed to fetch leaderboard')
+    }
+
+    return jsonOk(res, { players: data, page, size, total: count })
+  } catch (err) {
+    console.error('player leaderboard unexpected error:', err)
+    return jsonError(res, 500, 'INTERNAL_ERROR', 'Something went wrong')
   }
-
-  try{
-
-    const { data, error } = await supabase
-      .from('players')
-      .select('id_player,name,score')
-      .order('score',{ascending:false})
-      .limit(10)
-
-    if(error) throw error
-
-    return res.status(200).json(data)
-
-  }catch(err){
-
-    return res.status(500).json({error:err.message})
-
-  }
-
 }

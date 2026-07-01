@@ -1,13 +1,32 @@
-# API Error Fix - TODO Steps
+# Pukul Prabowo — TODO
 
-## Approved Plan
-- [x] 1. Update services/*.js: Dynamic BASE_URL + 3x retry logic
-- [x] 2. Update ui/donorTicker.js & ui/leaderboardUI.js: Add error toasts
-- [ ] 3. Test locally: Install Vercel CLI (`npm i -g vercel`), run `vercel dev`
-- [ ] 4. Deploy: `vercel --prod`
-- [ ] 5. Verify Supabase tables & env vars exist
+## ✅ Selesai
+- [x] Frontend game loop (click, combo, popup, animation, sound)
+- [x] Login UI dengan nama + provinsi
+- [x] Profile UI
+- [x] Leaderboard UI (pemain + provinsi)
+- [x] Donor ticker UI
+- [x] Error toast system
+- [x] Serverless API endpoints (score, leaderboard, donors, rank, health)
+- [x] Supabase schema (reset.sql + seed.sql)
+- [x] API response format konsisten { ok, data, error }
+- [x] Input validation di API
+- [x] Anti-cheat ringan (score audit trail)
+- [x] RLS enabled
+- [x] Dynamic API URL (relative path)
+- [x] Auto-submit score berkala
+- [x] Score persist di localStorage
+- [x] Auto-login dari localStorage
+- [x] Environment variable check script
+- [x] Documentation (README)
 
-## Progress
-API errors fixed with dynamic URLs, retries, and user-visible toasts using placeholders on failure. Open index.html or run dev server to test.
-
-Updated TODO.md.
+## 🔲 Tersisa / Future
+- [ ] Sound toggle button di UI
+- [ ] Dark/light mode toggle
+- [ ] Share score ke social media
+- [ ] Admin dashboard untuk manage donors
+- [ ] Rate limiting di API
+- [ ] IP-based anti-cheat yang lebih kuat
+- [ ] PWA support (manifest + service worker)
+- [ ] Hapus akun / reset score (player self-service)
+- [ ] Multi-language support

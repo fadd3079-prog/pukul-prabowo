@@ -16,35 +16,42 @@ export function initLeaderboardUI() {
   loadPlayerRanking(1);
   loadProvinceRanking(1);
 
-  btnMorePlayer.addEventListener('click', () => {
-    if (!playerExpanded) {
-      playerPage++;
-      loadPlayerRanking(playerPage);
-      btnMorePlayer.textContent = 'show less ▴';
-      playerExpanded = true;
-    } else {
-      playerPage = 1;
-      lbPlayerList.innerHTML = '';
-      loadPlayerRanking(1);
-      btnMorePlayer.textContent = 'show more ▾';
-      playerExpanded = false;
-    }
-  });
+  if (btnMorePlayer) {
+    btnMorePlayer.addEventListener('click', () => {
+      if (!playerExpanded) {
+        playerPage++;
+        loadPlayerRanking(playerPage);
+        btnMorePlayer.textContent = 'show less ▴';
+        playerExpanded = true;
+      } else {
+        playerPage = 1;
+        if (lbPlayerList) lbPlayerList.innerHTML = '';
+        loadPlayerRanking(1);
+        btnMorePlayer.textContent = 'show more ▾';
+        playerExpanded = false;
+      }
+    });
+  }
 
-  btnMoreProvince.addEventListener('click', () => {
-    if (!provinceExpanded) {
-      provincePage++;
-      loadProvinceRanking(provincePage);
-      btnMoreProvince.textContent = 'show less ▴';
-      provinceExpanded = true;
-    } else {
-      provincePage = 1;
-      lbProvinceList.innerHTML = '';
-      loadProvinceRanking(1);
-      btnMoreProvince.textContent = 'show more ▾';
-      provinceExpanded = false;
-    }
-  });
+  if (btnMoreProvince) {
+    btnMoreProvince.addEventListener('click', () => {
+      if (!provinceExpanded) {
+        provincePage++;
+        loadProvinceRanking(provincePage);
+        btnMoreProvince.textContent = 'show less ▴';
+        provinceExpanded = true;
+      } else {
+        provincePage = 1;
+        if (lbProvinceList) lbProvinceList.innerHTML = '';
+        loadProvinceRanking(1);
+        btnMoreProvince.textContent = 'show more ▾';
+        provinceExpanded = false;
+      }
+    });
+  }
+
+  // Auto-refresh every 30 seconds
+  setInterval(refreshLeaderboard, 30000);
 }
 
 async function loadPlayerRanking(page) {
@@ -54,8 +61,10 @@ async function loadPlayerRanking(page) {
     renderPlayerList(data, page > 1);
   } catch (e) {
     console.error('Player leaderboard failed:', e);
-    const { showError } = await import('./errorToast.js');
-    showError('Gagal memuat leaderboard pemain. Menggunakan data sementara.');
+    try {
+      const { showError } = await import('./errorToast.js');
+      showError('Gagal memuat leaderboard pemain.');
+    } catch (_) {}
   }
 }
 
@@ -66,20 +75,30 @@ async function loadProvinceRanking(page) {
     renderProvinceList(data, page > 1);
   } catch (e) {
     console.error('Province leaderboard failed:', e);
-    const { showError } = await import('./errorToast.js');
-    showError('Gagal memuat leaderboard provinsi. Menggunakan data sementara.');
+    try {
+      const { showError } = await import('./errorToast.js');
+      showError('Gagal memuat leaderboard provinsi.');
+    } catch (_) {}
   }
 }
 
 function renderPlayerList(data, append = false) {
   if (!lbPlayerList) return;
   if (!append) lbPlayerList.innerHTML = '';
+
+  if (!data || data.length === 0) {
+    if (!append) {
+      lbPlayerList.innerHTML = '<li class="lb-empty-state">Belum ada data</li>';
+    }
+    return;
+  }
+
   data.forEach(item => {
     const li = document.createElement('li');
     li.innerHTML = `
       <span class="lb-rank">#${item.rank}</span>
-      <span class="lb-name">${escapeHtml(item.name)}</span>
-      <span class="lb-score">${item.score.toLocaleString('id-ID')}</span>
+      <span class="lb-name">${escapeHtml(item.name || '')}</span>
+      <span class="lb-score">${(item.score || 0).toLocaleString('id-ID')}</span>
     `;
     lbPlayerList.appendChild(li);
   });
@@ -88,33 +107,42 @@ function renderPlayerList(data, append = false) {
 function renderProvinceList(data, append = false) {
   if (!lbProvinceList) return;
   if (!append) lbProvinceList.innerHTML = '';
-  data.forEach(item => {
+
+  if (!data || data.length === 0) {
+    if (!append) {
+      lbProvinceList.innerHTML = '<li class="lb-empty-state">Belum ada data</li>';
+    }
+    return;
+  }
+
+  data.forEach((item, index) => {
     const li = document.createElement('li');
+    const rank = item.rank || ((provincePage - 1) * PAGE_SIZE + index + 1);
     li.innerHTML = `
-      <span class="lb-rank">#${item.rank}</span>
-      <span class="lb-name">${escapeHtml(item.province)}</span>
-      <span class="lb-score">${item.score.toLocaleString('id-ID')}</span>
+      <span class="lb-rank">#${rank}</span>
+      <span class="lb-name">${escapeHtml(item.province_name || '')}</span>
+      <span class="lb-score">${(item.total_score || 0).toLocaleString('id-ID')}</span>
     `;
     lbProvinceList.appendChild(li);
   });
 }
 
 export function refreshLeaderboard() {
-  playerPage      = 1;
-  provincePage    = 1;
-  playerExpanded  = false;
+  playerPage       = 1;
+  provincePage     = 1;
+  playerExpanded   = false;
   provinceExpanded = false;
-  btnMorePlayer.textContent   = 'show more ▾';
-  btnMoreProvince.textContent = 'show more ▾';
+  if (btnMorePlayer)   btnMorePlayer.textContent   = 'show more ▾';
+  if (btnMoreProvince) btnMoreProvince.textContent = 'show more ▾';
   loadPlayerRanking(1);
   loadProvinceRanking(1);
 }
 
 function escapeHtml(str) {
+  if (!str) return '';
   return str
     .replace(/&/g, '&amp;')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"');
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
-

@@ -46,15 +46,4 @@ export function playCombo() {
 
 // ===== TOGGLE =====
 export function setSoundEnabled(val) { enabled = val; }
-export function isSoundEnabled()     { return enabled; }
-// ```
-
-// ---
-
-// **Cara kerjanya:**
-// ```
-// Klik 1  → restart dari 0 → "d..."
-// Klik 2  → restart dari 0 → "d..."
-// Klik 3  → restart dari 0 → "d..."
-// [berhenti]
-//            → tidak ada yang interrupt → "duuuuaaarrr" ✅
+export function isSoundEnabled()     { return enabled; }

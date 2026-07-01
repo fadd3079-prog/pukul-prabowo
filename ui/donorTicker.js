@@ -24,7 +24,14 @@ function renderTicker(data) {
   if (!tickerEl) return;
 
   tickerEl.innerHTML = '';
-  if (!data.length) return;
+
+  if (!data || !data.length) {
+    const emptyChip = document.createElement('div');
+    emptyChip.className = 'donor-chip';
+    emptyChip.textContent = 'Belum ada donor';
+    tickerEl.appendChild(emptyChip);
+    return;
+  }
 
   const rowSize = Math.ceil(data.length / 3);
   const rows = [
@@ -55,6 +62,7 @@ export function refreshDonorTicker() {
 }
 
 function escapeHtml(str) {
+  if (!str) return '';
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

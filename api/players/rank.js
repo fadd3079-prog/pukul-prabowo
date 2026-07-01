@@ -1,41 +1,60 @@
 const { supabase } = require('../../lib/supabase')
+const {
+  validateMethod,
+  jsonOk,
+  jsonError,
+  normalizeName,
+  toProvinceCode,
+} = require('../../lib/apiHelper')
 
-module.exports = async function handler(req, res){
+module.exports = async function handler(req, res) {
+  if (!validateMethod(req, res, 'GET')) return
 
-  res.setHeader('Access-Control-Allow-Origin','*')
+  try {
+    const { name, province } = req.query
 
-  if(req.method !== 'GET'){
-    return res.status(405).json({error:'Method not allowed'})
-  }
+    if (!name || typeof name !== 'string') {
+      return jsonError(res, 400, 'INVALID_NAME', 'name query parameter is required')
+    }
+    if (!province || typeof province !== 'string') {
+      return jsonError(res, 400, 'INVALID_PROVINCE', 'province query parameter is required')
+    }
 
-  try{
+    const nameNormalized = normalizeName(name)
+    const provinceCode = toProvinceCode(province)
 
-    const { id_player } = req.query
-
-    const { data:player, error } = await supabase
+    // Find the player
+    const { data: player, error: playerError } = await supabase
       .from('players')
-      .select('score')
-      .eq('id_player', id_player)
+      .select('id, name, score')
+      .eq('name_normalized', nameNormalized)
+      .eq('province_code', provinceCode)
       .single()
 
-    if(error) throw error
+    if (playerError || !player) {
+      return jsonError(res, 404, 'PLAYER_NOT_FOUND', 'Player not found')
+    }
 
-    const { count } = await supabase
+    // Count players with higher score to determine rank
+    const { count, error: countError } = await supabase
       .from('players')
-      .select('*',{count:'exact', head:true})
+      .select('id', { count: 'exact', head: true })
       .gt('score', player.score)
+
+    if (countError) {
+      console.error('rank count error:', countError)
+      return jsonError(res, 500, 'DB_ERROR', 'Failed to calculate rank')
+    }
 
     const rank = (count || 0) + 1
 
-    return res.status(200).json({
+    return jsonOk(res, {
       rank,
-      score:player.score
+      score: player.score,
+      name: player.name,
     })
-
-  }catch(err){
-
-    return res.status(500).json({error:err.message})
-
+  } catch (err) {
+    console.error('rank unexpected error:', err)
+    return jsonError(res, 500, 'INTERNAL_ERROR', 'Something went wrong')
   }
-
 }

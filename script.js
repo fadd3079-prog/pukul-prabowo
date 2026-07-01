@@ -26,19 +26,18 @@ import {
 
 import { initLoginUI } from './ui/loginUI.js';
 import { initProfileUI, updateProfileDisplay } from './ui/profileUI.js';
-import { initLeaderboardUI } from './ui/leaderboardUI.js';
+import { initLeaderboardUI, refreshLeaderboard } from './ui/leaderboardUI.js';
 import { initDonorTicker } from './ui/donorTicker.js';
 
-import { populateProvinceSelect } from './data/provinces.js';
 import { submitScore } from './services/playerAPI.js';
 
 
 // ===== REFS =====
 const screenGame     = document.getElementById('screen-game');
-const selectProvince = document.getElementById('input-province');
 const hitObject      = document.getElementById('hit-object');
 const popupContainer = document.getElementById('popup-container');
 const displayScore   = document.getElementById('display-score');
+const displayCombo   = document.getElementById('display-combo');
 const btnProfile     = document.getElementById('btn-profile');
 
 
@@ -61,6 +60,8 @@ function showScreen(id) {
 
 // ===== SCREEN SHAKE =====
 function triggerScreenShake() {
+
+  if (!screenGame) return;
 
   screenGame.classList.remove('shake');
 
@@ -115,13 +116,13 @@ function loadScore(){
 
   if(!saved) return 0;
 
-  return parseInt(saved);
+  return parseInt(saved) || 0;
 
 }
 
 
 // ===== LOGIN SYSTEM =====
-populateProvinceSelect(selectProvince);
+// populateProvinceSelect sudah dipanggil di dalam initLoginUI
 
 initLoginUI({
 
@@ -154,7 +155,8 @@ function startGame(){
 
   gameState.lastClickTime = 0;
 
-  displayScore.textContent = gameState.hit;
+  if (displayScore) displayScore.textContent = gameState.hit;
+  if (displayCombo) displayCombo.textContent = '';
 
   const gameBody = document.getElementById('game-body');
 
@@ -187,19 +189,24 @@ initProfileUI({
   }
 });
 
-btnProfile.addEventListener('click', () => {
+if (btnProfile) {
+  btnProfile.addEventListener('click', () => {
 
-  updateProfileDisplay();
+    updateProfileDisplay();
 
-  showScreen('screen-profile');
+    showScreen('screen-profile');
 
-});
+  });
+}
 
-document.getElementById('btn-close-profile').addEventListener('click', () => {
+const btnCloseProfile = document.getElementById('btn-close-profile');
+if (btnCloseProfile) {
+  btnCloseProfile.addEventListener('click', () => {
 
-  showScreen('screen-game');
+    showScreen('screen-game');
 
-});
+  });
+}
 
 
 // ===== SYSTEM INIT =====
@@ -215,7 +222,12 @@ initClickSystem(hitObject, {
 
   onHit({ hit, combo, isCritical, hitValue }){
 
-    displayScore.textContent = hit;
+    if (displayScore) displayScore.textContent = hit;
+
+    // Update combo display
+    if (displayCombo) {
+      displayCombo.textContent = combo > 1 ? `${combo}x COMBO` : '';
+    }
 
     saveScore(hit); // SIMPAN SCORE SETIAP HIT
 
@@ -263,16 +275,20 @@ initDonorTicker();
 
 
 // ===== AUTO SUBMIT SCORE KE SERVER =====
-setInterval(() => {
+let autoSubmitRunning = false;
 
-  if(gameState.isPlaying){
+setInterval(async () => {
 
-    submitScore();
-
+  if(gameState.isPlaying && !autoSubmitRunning){
+    autoSubmitRunning = true;
+    try {
+      await submitScore();
+      refreshLeaderboard();
+    } catch(e) {}
+    autoSubmitRunning = false;
   }
 
 }, 10000);
-
 
 
 // ===== SUBMIT SAAT TAB DITUTUP =====

@@ -1,10 +1,16 @@
 {
-  "name": "pukul-prabowo-api",
+  "name": "pukul-prabowo",
   "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "vercel dev",
+    "check": "node scripts/check-env.js"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
   },
   "engines": {
-    "node": "24.x"
+    "node": ">=18"
   }
 }

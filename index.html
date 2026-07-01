@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- 'theme-color' is not supported by Firefox and Opera, but kept for Chrome and Edge -->
     <meta name="theme-color" content="#2d0a4e" />
+    <meta name="description" content="Game tap-tap ala Popcat — pukul Prabowo untuk naikkan skor! Siapa provinsi terkuat?">
     <title>Pukul Prabowo</title>
     <link rel="icon" href="assets/logo.png" type="image/png" />
     <link rel="stylesheet" href="style.css" />
@@ -36,6 +37,7 @@
             <div class="header-left">
                 <span class="label-skor">SKOR</span>
                 <span id="display-score">0</span>
+                <span id="display-combo" class="combo-counter"></span>
             </div>
             <div class="header-center">
                 <span id="display-title">PUKUL PRABOWO</span>
@@ -100,8 +102,7 @@
     </div>
 
     <!-- ===== PROFILE ===== -->
-    <div id="screen-profile" class="screen"
-        style="position:fixed;top:0;left:0;width:100vw;height:100vh;display:none;align-items:center;justify-content:center;background:#2d0a4e;z-index:999;">
+    <div id="screen-profile" class="screen">
         <div class="profile-card">
             <h1 class="game-title">PUKUL<br>PRABOWO</h1>
             <div class="profile-row">
