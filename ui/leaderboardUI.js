@@ -21,13 +21,13 @@ export function initLeaderboardUI() {
       if (!playerExpanded) {
         playerPage++;
         loadPlayerRanking(playerPage);
-        btnMorePlayer.textContent = 'show less ▴';
+        btnMorePlayer.textContent = 'Tampilkan Sedikit';
         playerExpanded = true;
       } else {
         playerPage = 1;
         if (lbPlayerList) lbPlayerList.innerHTML = '';
         loadPlayerRanking(1);
-        btnMorePlayer.textContent = 'show more ▾';
+        btnMorePlayer.textContent = 'Tampilkan Semua';
         playerExpanded = false;
       }
     });
@@ -38,13 +38,13 @@ export function initLeaderboardUI() {
       if (!provinceExpanded) {
         provincePage++;
         loadProvinceRanking(provincePage);
-        btnMoreProvince.textContent = 'show less ▴';
+        btnMoreProvince.textContent = 'Tampilkan Sedikit';
         provinceExpanded = true;
       } else {
         provincePage = 1;
         if (lbProvinceList) lbProvinceList.innerHTML = '';
         loadProvinceRanking(1);
-        btnMoreProvince.textContent = 'show more ▾';
+        btnMoreProvince.textContent = 'Tampilkan Semua';
         provinceExpanded = false;
       }
     });
@@ -132,8 +132,8 @@ export function refreshLeaderboard() {
   provincePage     = 1;
   playerExpanded   = false;
   provinceExpanded = false;
-  if (btnMorePlayer)   btnMorePlayer.textContent   = 'show more ▾';
-  if (btnMoreProvince) btnMoreProvince.textContent = 'show more ▾';
+  if (btnMorePlayer)   btnMorePlayer.textContent   = 'Tampilkan Semua';
+  if (btnMoreProvince) btnMoreProvince.textContent = 'Tampilkan Semua';
   loadPlayerRanking(1);
   loadProvinceRanking(1);
 }

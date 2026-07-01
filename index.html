@@ -5,10 +5,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- 'theme-color' is not supported by Firefox and Opera, but kept for Chrome and Edge -->
-    <meta name="theme-color" content="#2d0a4e" />
+    <meta name="theme-color" content="#0a0514" />
     <meta name="description" content="Game tap-tap ala Popcat — pukul Prabowo untuk naikkan skor! Siapa provinsi terkuat?">
     <title>Pukul Prabowo</title>
     <link rel="icon" href="assets/logo.png" type="image/png" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="style.css" />
 </head>
 
@@ -18,14 +24,14 @@
     <div id="screen-login" class="screen active">
         <div class="login-card">
             <h1 class="game-title">PUKUL<br>PRABOWO</h1>
-            <input id="input-name" type="text" placeholder="Nama" maxlength="20" autocomplete="off" />
+            <input id="input-name" type="text" placeholder="Nama Pemain" maxlength="20" autocomplete="off" />
             <div class="select-wrapper">
                 <label for="input-province" class="visually-hidden">Provinsi</label>
                 <select id="input-province" aria-label="Provinsi">
-                    <option value="" disabled selected>Provinsi</option>
+                    <option value="" disabled selected>Provinsi Asal</option>
                 </select>
             </div>
-            <button id="btn-play">Main</button>
+            <button id="btn-play">Mulai Bermain</button>
         </div>
     </div>
 
@@ -36,17 +42,19 @@
         <div id="game-header">
             <div class="header-left">
                 <span class="label-skor">SKOR</span>
-                <span id="display-score">0</span>
-                <span id="display-combo" class="combo-counter"></span>
+                <div class="score-container">
+                    <span id="display-score">0</span>
+                    <span id="display-combo" class="combo-counter"></span>
+                </div>
             </div>
             <div class="header-center">
                 <span id="display-title">PUKUL PRABOWO</span>
             </div>
             <div class="header-right">
                 <button id="btn-profile" aria-label="Profil">
-                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="8" r="4" />
-                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
                     </svg>
                 </button>
             </div>
@@ -59,11 +67,12 @@
             <div id="game-arena-wrap">
                 <div id="game-arena">
                     <div id="hit-object">
+                        <div class="hit-glow-ring"></div>
                         <img id="character-img" src="assets/objek.png" alt="Objek Hit" draggable="false" />
                     </div>
                     <div id="popup-container" aria-hidden="true"></div>
                 </div>
-                <p id="game-hint">Klik prabowo untuk memukul</p>
+                <p id="game-hint">Sentuh karakter untuk memukul</p>
             </div>
 
             <!-- Leaderboard — scroll ke bawah -->
@@ -71,15 +80,19 @@
 
                 <section class="lb-section">
                     <h2>RANKING PROVINSI</h2>
-                    <ul id="lb-province-list"></ul>
-                    <button class="btn-show-more" id="btn-more-province">show more ▾</button>
-                </section>
-                <section class="lb-section">
-                    <h2>RANKING PEMAIN</h2>
-                    <ul id="lb-player-list"></ul>
-                    <button class="btn-show-more" id="btn-more-player">show more ▾</button>
+                    <ul id="lb-province-list">
+                        <li class="lb-empty-state">Memuat data...</li>
+                    </ul>
+                    <button class="btn-show-more" id="btn-more-province">Tampilkan Semua</button>
                 </section>
 
+                <section class="lb-section">
+                    <h2>RANKING PEMAIN</h2>
+                    <ul id="lb-player-list">
+                        <li class="lb-empty-state">Memuat data...</li>
+                    </ul>
+                    <button class="btn-show-more" id="btn-more-player">Tampilkan Semua</button>
+                </section>
 
                 <section id="donor-section">
                     <a id="btn-donate" href="https://tako.id/fadhol_pemula" target="_blank" rel="noopener noreferrer">
@@ -104,24 +117,28 @@
     <!-- ===== PROFILE ===== -->
     <div id="screen-profile" class="screen">
         <div class="profile-card">
-            <h1 class="game-title">PUKUL<br>PRABOWO</h1>
+            <h1 class="game-title">PROFIL<br>PEMAIN</h1>
             <div class="profile-row">
                 <span class="profile-label">Nama</span>
-                <span id="profile-name"></span>
+                <span id="profile-name">-</span>
             </div>
             <div class="profile-row">
                 <span class="profile-label">Provinsi</span>
-                <span id="profile-province"></span>
+                <span id="profile-province">-</span>
             </div>
             <div class="profile-row">
                 <span class="profile-label">Skor</span>
-                <span id="profile-score"></span>
+                <span id="profile-score">0</span>
             </div>
             <div class="profile-row">
-                <span class="profile-label">Rank Player</span>
-                <span id="profile-rank"></span>
+                <span class="profile-label">Combo Tertinggi</span>
+                <span id="profile-combo">0x</span>
             </div>
-            <button id="btn-close-profile">Tutup</button>
+            <div class="profile-row">
+                <span class="profile-label">Peringkat Global</span>
+                <span id="profile-rank">-</span>
+            </div>
+            <button id="btn-close-profile">Kembali</button>
         </div>
     </div>
 
